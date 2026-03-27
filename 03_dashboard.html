@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)file:///Users/user/Downloads/03_dashboard_2.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>바이럴 레이더</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="./03_dashboard_files/css2" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --bg2: #111118; --bg3: #18181f;
+      --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+      --text: #e8e8f0; --muted: #7a7a8c;
+      --accent: #ff4d6d; --teal: #00c9a7; --amber: #f59e0b; --purple: #7c3aed;
+      --meitu: #ff4d6d; --beautycam: #7c3aed;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; min-height: 100vh; }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    header { border-bottom: 1px solid var(--border); background: rgba(10,10,15,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+    .hdr { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-txt { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; }
+    .logo-txt span { color: var(--accent); }
+    .hdr-right { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--muted); }
+    .live-badge { display: flex; align-items: center; gap: 6px; background: rgba(0,201,167,0.1); border: 1px solid rgba(0,201,167,0.25); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: var(--teal); }
+    .live-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+    .refresh-btn { background: rgba(255,255,255,0.07); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 14px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; }
+
+    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .stat-card.viral .stat-value { color: var(--accent); }
+    .stat-card.meitu .stat-value { color: var(--meitu); }
+    .stat-card.bcam .stat-value { color: var(--beautycam); }
+
+    .filter-bar { display: flex; align-items: center; gap: 10px; padding: 20px 0 16px; flex-wrap: wrap; }
+    .chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all .15s; }
+    .chip:hover { border-color: rgba(255,255,255,.25); color: var(--text); }
+    .chip.on { background: rgba(255,77,109,.15); border-color: var(--accent); color: var(--accent); }
+    .chip.on-bcam { background: rgba(124,58,237,.15); border-color: var(--beautycam); color: var(--beautycam); }
+    .chip.on-viral { background: rgba(245,158,11,.15); border-color: var(--amber); color: var(--amber); }
+    .sort-sel { margin-left: auto; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
+
+    .content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; padding-bottom: 40px; }
+    .feed { display: flex; flex-direction: column; gap: 10px; }
+
+    .rcard { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: 72px 1fr 72px; gap: 14px; align-items: start; text-decoration: none; color: inherit; transition: border-color .15s; }
+    .rcard:hover { border-color: var(--border2); }
+    .rcard.viral { border-color: rgba(255,77,109,.3); background: linear-gradient(135deg, rgba(255,77,109,.04) 0%, var(--bg2) 60%); }
+    .thumb { width: 72px; height: 72px; border-radius: 8px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .rbody {}
+    .rhead { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+    .bbadge { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .bbadge.meitu { background: rgba(255,77,109,.15); color: #ff8099; }
+    .bbadge.beautycam { background: rgba(124,58,237,.15); color: #a78bfa; }
+    .vtag { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+    .rtime { margin-left: auto; font-size: 11px; color: var(--muted); }
+    .rcap { font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .rmets { display: flex; gap: 12px; flex-wrap: wrap; }
+    .met { font-size: 11px; color: var(--muted); }
+    .met b { color: var(--text); font-weight: 500; }
+    .growth-pill { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-left: 4px; }
+    .growth-pill.hot { background: rgba(255,77,109,.15); color: var(--accent); }
+    .growth-pill.warm { background: rgba(245,158,11,.15); color: var(--amber); }
+    .growth-pill.cool { background: rgba(0,201,167,.1); color: var(--teal); }
+
+    .scol { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .sring { position: relative; width: 56px; height: 56px; }
+    .sring svg { transform: rotate(-90deg); }
+    .sring-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+    .sring-num { font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; }
+    .sring-lbl { font-size: 9px; color: var(--muted); }
+    .snap-dots { display: flex; gap: 4px; margin-top: 4px; }
+    .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
+    .sdot.done { background: var(--teal); }
+    .sdot.active { background: var(--amber); }
+
+    .sidebar { display: flex; flex-direction: column; gap: 14px; }
+    .sc { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .sc-title { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 12px; }
+
+    .alert-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .alert-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .adot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .abrand { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+    .agrowth { font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif; line-height: 1; }
+    .atime { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .log-row:last-child { border-bottom: none; }
+    .ldot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .ldot.success { background: var(--teal); }
+    .ldot.error { background: var(--accent); }
+
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--muted); }
+    .loading-skeleton { background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    @media (max-width: 900px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="shell">
+    <div class="hdr">
+      <div class="logo">
+        <div class="logo-mark">📡</div>
+        <div class="logo-txt">바이럴 <span>레이더</span></div>
+      </div>
+      <div class="hdr-right">
+        <div class="live-badge"><span class="live-dot"></span>실시간 추적 중</div>
+        <span id="last-update">—</span>
+        <button class="refresh-btn" onclick="loadData()">새로고침</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <div class="stats-row">
+    <div class="stat-card viral">
+      <div class="stat-label">급상승 감지</div>
+      <div class="stat-value" id="stat-viral">—</div>
+      <div class="stat-sub">바이럴 판정 릴스</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">추적 중</div>
+      <div class="stat-value" id="stat-tracking">—</div>
+      <div class="stat-sub">재측정 대기 릴스</div>
+    </div>
+    <div class="stat-card meitu">
+      <div class="stat-label">메이투</div>
+      <div class="stat-value" id="stat-meitu">—</div>
+      <div class="stat-sub">수집 릴스</div>
+    </div>
+    <div class="stat-card bcam">
+      <div class="stat-label">뷰티캠</div>
+      <div class="stat-value" id="stat-bcam">—</div>
+      <div class="stat-sub">수집 릴스</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="chip on" onclick="setFilter(&#39;all&#39;,this)">전체</button>
+    <button class="chip" onclick="setFilter(&#39;meitu&#39;,this)">메이투</button>
+    <button class="chip" onclick="setFilter(&#39;beautycam&#39;,this)">뷰티캠</button>
+    <button class="chip" id="viral-chip" onclick="toggleViral(this)">🔥 급상승만</button>
+    <select class="sort-sel" onchange="setSort(this.value)">
+      <option value="first_seen_at">최신순</option>
+      <option value="growth">증가율순</option>
+      <option value="views">조회수순</option>
+    </select>
+  </div>
+
+  <div class="content-grid">
+    <div class="feed" id="feed"><div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">Failed to fetch</div><div style="font-size:11px;margin-top:6px;color:var(--muted)">SUPABASE_URL과 SUPABASE_ANON_KEY를 확인하세요</div></div></div>
+    <aside class="sidebar">
+      <div class="sc">
+        <div class="sc-title">🔔 최근 급상승 알림</div>
+        <div id="alerts-list"><div style="font-size:12px;color:var(--muted)">알림 없음</div></div>
+      </div>
+      <div class="sc">
+        <div class="sc-title">📋 크롤링 로그</div>
+        <div id="crawl-log"><div style="font-size:12px;color:var(--muted)">로그 없음</div></div>
+      </div>
+      <div class="sc">
+        <div class="sc-title">📊 바이럴 판정 기준</div>
+        <div style="font-size:12px;line-height:1.9;color:var(--muted)">
+          <div style="display:flex;justify-content:space-between"><span>6h 이내</span><span style="color:var(--text);font-weight:500">+300% 이상</span></div>
+          <div style="display:flex;justify-content:space-between"><span>12h 이내</span><span style="color:var(--text);font-weight:500">+500% 이상</span></div>
+          <div style="display:flex;justify-content:space-between"><span>24h 이내</span><span style="color:var(--text);font-weight:500">+800% 이상</span></div>
+          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;color:var(--accent);font-size:11px">최소 조회수 10,000 이상</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+// ★ 여기 두 줄만 본인 값으로 교체하세요
+const SUPABASE_URL     = 'https://byfxdwevmfocarvlnwla.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Znhkd2V2bWZvY2Fydmxud2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTQ2MjIsImV4cCI6MjA4OTMzMDYyMn0.uVKLAEBaudGcEw4nnZCSbSX0Tkjg8aVqurG4qclXpPc';
+
+let allPosts = [], allSnapshots = [];
+let filterBrand = 'all', filterViral = false, sortMode = 'first_seen_at';
+
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1_000_000) return (n/1_000_000).toFixed(1)+'M';
+  if (n >= 1_000) return (n/1_000).toFixed(1)+'K';
+  return n.toLocaleString();
+}
+function relTime(iso) {
+  if (!iso) return '—';
+  const d = (Date.now() - new Date(iso))/1000;
+  if (d < 60) return '방금 전';
+  if (d < 3600) return Math.floor(d/60)+'분 전';
+  if (d < 86400) return Math.floor(d/3600)+'시간 전';
+  return Math.floor(d/86400)+'일 전';
+}
+function growthColor(r) {
+  if (r >= 300) return 'hot';
+  if (r >= 100) return 'warm';
+  return 'cool';
+}
+function ringColor(r) {
+  if (r >= 300) return '#ff4d6d';
+  if (r >= 100) return '#f59e0b';
+  return '#00c9a7';
+}
+
+function getLatestSnapshot(postId) {
+  const snaps = allSnapshots.filter(s => s.post_id === postId).sort((a,b) => b.snapshot_seq - a.snapshot_seq);
+  return snaps[0] || null;
+}
+
+function ring(growthRate, snapshotSeq) {
+  const pct = Math.min(growthRate / 1000, 1);
+  const r = 22, cx = 28, cy = 28;
+  const circ = 2 * Math.PI * r;
+  const filled = pct * circ;
+  const color = ringColor(growthRate);
+  const dots = Array.from({length: 4}, (_,i) => `<div class="sdot ${i < snapshotSeq ? 'done' : ''} ${i === snapshotSeq-1 ? 'active' : ''}"></div>`).join('');
+  return `
+    <div class="sring">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+          stroke-dasharray="${filled.toFixed(1)} ${(circ-filled).toFixed(1)}" stroke-linecap="round"/>
+      </svg>
+      <div class="sring-val">
+        <span class="sring-num" style="color:${color}">+${growthRate >= 1000 ? Math.round(growthRate/100)/10+'K' : Math.round(growthRate)}%</span>
+      </div>
+    </div>
+    <div class="snap-dots">${dots}</div>
+    <div style="font-size:9px;color:var(--muted);text-align:center">${snapshotSeq}번째 측정</div>
+  `;
+}
+
+function cardHTML(post) {
+  const snap = getLatestSnapshot(post.id);
+  const growthRate = snap ? snap.views_growth_rate : 0;
+  const currentViews = snap ? snap.views : post.initial_views;
+  const seq = snap ? snap.snapshot_seq : 1;
+
+  return `
+    <a class="rcard ${post.is_viral ? 'viral' : ''}" href="${post.url}" target="_blank" rel="noopener">
+      <div class="thumb">🎬</div>
+      <div class="rbody">
+        <div class="rhead">
+          <span class="bbadge ${post.brand}">${post.brand === 'meitu' ? '메이투' : '뷰티캠'}</span>
+          ${post.is_viral ? '<span class="vtag">급상승</span>' : ''}
+          <span class="rtime">${relTime(post.first_seen_at)}</span>
+        </div>
+        <div class="rcap">${post.caption || '(캡션 없음)'}</div>
+        <div class="rmets">
+          <span class="met">👁 <b>${fmt(currentViews)}</b></span>
+          <span class="met">❤ <b>${fmt(post.initial_likes)}</b></span>
+          <span class="met">💬 <b>${fmt(post.initial_comments)}</b></span>
+          ${growthRate > 0 ? `<span class="growth-pill ${growthColor(growthRate)}">+${Math.round(growthRate)}%</span>` : ''}
+        </div>
+      </div>
+      <div class="scol">${ring(growthRate, seq)}</div>
+    </a>
+  `;
+}
+
+function getFiltered() {
+  let list = [...allPosts];
+  if (filterBrand !== 'all') list = list.filter(p => p.brand === filterBrand);
+  if (filterViral) list = list.filter(p => p.is_viral);
+  if (sortMode === 'growth') {
+    list.sort((a,b) => {
+      const sa = getLatestSnapshot(a.id), sb = getLatestSnapshot(b.id);
+      return (sb?.views_growth_rate||0) - (sa?.views_growth_rate||0);
+    });
+  } else if (sortMode === 'views') {
+    list.sort((a,b) => {
+      const sa = getLatestSnapshot(a.id), sb = getLatestSnapshot(b.id);
+      return (sb?.views||b.initial_views||0) - (sa?.views||a.initial_views||0);
+    });
+  } else {
+    list.sort((a,b) => new Date(b.first_seen_at) - new Date(a.first_seen_at));
+  }
+  return list;
+}
+
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  const posts = getFiltered();
+  if (!posts.length) {
+    feed.innerHTML = '<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">📭</div><div>수집된 릴스가 없어요</div><div style="font-size:12px;margin-top:8px">자정부터 자동으로 수집 시작돼요</div></div>';
+    return;
+  }
+  feed.innerHTML = posts.map(cardHTML).join('');
+}
+
+async function loadData() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = Array(3).fill(`
+    <div class="rcard" style="pointer-events:none">
+      <div class="loading-skeleton" style="width:72px;height:72px;border-radius:8px;flex-shrink:0"></div>
+      <div style="flex:1"><div class="loading-skeleton" style="height:13px;width:40%;margin-bottom:8px;border-radius:4px"></div><div class="loading-skeleton" style="height:12px;width:85%;border-radius:4px"></div></div>
+    </div>`).join('');
+
+  try {
+    const h = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` };
+    const [pr, sr, ar, lr] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=first_seen_at.desc&limit=100`, {headers:h}),
+      fetch(`${SUPABASE_URL}/rest/v1/post_snapshots?select=*&order=snapshot_seq.desc`, {headers:h}),
+      fetch(`${SUPABASE_URL}/rest/v1/viral_alerts?select=*&order=alerted_at.desc&limit=10`, {headers:h}),
+      fetch(`${SUPABASE_URL}/rest/v1/crawl_logs?select=*&order=ran_at.desc&limit=8`, {headers:h}),
+    ]);
+
+    allPosts = await pr.json();
+    allSnapshots = await sr.json();
+    const alerts = await ar.json();
+    const logs = await lr.json();
+
+    document.getElementById('stat-viral').textContent = allPosts.filter(p=>p.is_viral).length;
+    document.getElementById('stat-tracking').textContent = allPosts.filter(p=>!p.is_viral).length;
+    document.getElementById('stat-meitu').textContent = allPosts.filter(p=>p.brand==='meitu').length;
+    document.getElementById('stat-bcam').textContent = allPosts.filter(p=>p.brand==='beautycam').length;
+    document.getElementById('last-update').textContent = '갱신: ' + new Date().toLocaleTimeString('ko-KR');
+
+    document.getElementById('alerts-list').innerHTML = !alerts.length
+      ? '<div style="font-size:12px;color:var(--muted)">알림 없음</div>'
+      : alerts.map(a => `
+        <div class="alert-item">
+          <div class="adot" style="background:${a.brand==='meitu'?'var(--meitu)':'var(--beautycam)'}"></div>
+          <div>
+            <div class="abrand" style="color:${a.brand==='meitu'?'var(--meitu)':'var(--beautycam)'}">${a.brand==='meitu'?'메이투':'뷰티캠'}</div>
+            <div class="agrowth" style="color:var(--amber)">+${Math.round(a.views_growth_rate)}%</div>
+            <div class="atime">${relTime(a.alerted_at)} · 슬랙 발송</div>
+          </div>
+        </div>`).join('');
+
+    document.getElementById('crawl-log').innerHTML = !logs.length
+      ? '<div style="font-size:12px;color:var(--muted)">로그 없음</div>'
+      : logs.map(l => `
+        <div class="log-row">
+          <span><span class="ldot ${l.status}"></span>${l.brand==='meitu'?'메이투':'뷰티캠'} <span style="color:var(--muted)">${l.posts_found||0}개</span></span>
+          <span style="color:var(--muted);font-size:11px">${relTime(l.ran_at)}</span>
+        </div>`).join('');
+
+    renderFeed();
+  } catch(e) {
+    feed.innerHTML = `<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">${e.message}</div><div style="font-size:11px;margin-top:6px;color:var(--muted)">SUPABASE_URL과 SUPABASE_ANON_KEY를 확인하세요</div></div>`;
+  }
+}
+
+function setFilter(brand, el) {
+  filterBrand = brand;
+  document.querySelectorAll('.chip:not(#viral-chip)').forEach(c => c.classList.remove('on','on-bcam'));
+  el.classList.add(brand==='beautycam'?'on-bcam':'on');
+  renderFeed();
+}
+function toggleViral(el) {
+  filterViral = !filterViral;
+  el.classList.toggle('on-viral', filterViral);
+  renderFeed();
+}
+function setSort(v) { sortMode = v; renderFeed(); }
+
+loadData();
+setInterval(loadData, 5*60*1000);
+</script>
+
+
+</body></html>
