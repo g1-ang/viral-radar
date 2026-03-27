@@ -1,112 +1,137 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///Users/user/Downloads/03_dashboard_2.html -->
+<!-- saved from url=(0041)file:///Users/user/Downloads/index_1.html -->
 <html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>바이럴 레이더</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/">
-  <link href="./03_dashboard_files/css2" rel="stylesheet">
+  <link href="./index_files/css2" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0a0a0f; --bg2: #111118; --bg3: #18181f;
-      --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
-      --text: #e8e8f0; --muted: #7a7a8c;
-      --accent: #ff4d6d; --teal: #00c9a7; --amber: #f59e0b; --purple: #7c3aed;
-      --meitu: #ff4d6d; --beautycam: #7c3aed;
+      --bg: #F8F6F1;
+      --bg2: #FFFFFF;
+      --bg3: #F0EDE6;
+      --border: rgba(0,0,0,0.08);
+      --border2: rgba(0,0,0,0.15);
+      --text: #1a1a1a;
+      --muted: #888880;
+      --accent: #E24B4A;
+      --teal: #0F9B7A;
+      --amber: #D97706;
+      --purple: #6D4ADB;
+      --meitu: #E24B4A;
+      --beautycam: #6D4ADB;
     }
     body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; min-height: 100vh; }
     .shell { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
-    header { border-bottom: 1px solid var(--border); background: rgba(10,10,15,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
-    .hdr { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .logo-txt { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; }
+    header { border-bottom: 0.5px solid var(--border); background: rgba(248,246,241,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+    .hdr { display: flex; align-items: center; justify-content: space-between; height: 58px; }
+    .logo { display: flex; align-items: center; gap: 9px; }
+    .logo-mark { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .logo-txt { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: var(--text); }
     .logo-txt span { color: var(--accent); }
-    .hdr-right { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--muted); }
-    .live-badge { display: flex; align-items: center; gap: 6px; background: rgba(0,201,167,0.1); border: 1px solid rgba(0,201,167,0.25); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: var(--teal); }
-    .live-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-    .refresh-btn { background: rgba(255,255,255,0.07); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 14px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; }
+    .hdr-right { display: flex; align-items: center; gap: 12px; }
+    .live-badge { display: flex; align-items: center; gap: 5px; background: rgba(15,155,122,0.1); border: 0.5px solid rgba(15,155,122,0.3); border-radius: 20px; padding: 4px 10px; font-size: 11px; color: var(--teal); font-weight: 500; }
+    .live-dot { width: 5px; height: 5px; background: var(--teal); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+    .hdr-meta { font-size: 11px; color: var(--muted); }
+    .refresh-btn { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 13px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; }
 
-    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
-    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
-    .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
-    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    /* 상단 스탯 — 병렬 배치 */
+    .stats-row { display: flex; align-items: center; gap: 10px; padding: 18px 0 0; flex-wrap: wrap; }
+    .stat-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 160px; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .stat-body {}
+    .stat-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; color: var(--text); }
+    .stat-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .stat-card.viral .stat-icon { background: rgba(226,75,74,0.1); }
     .stat-card.viral .stat-value { color: var(--accent); }
+    .stat-card.tracking .stat-icon { background: rgba(217,119,6,0.1); }
+    .stat-card.meitu .stat-icon { background: rgba(226,75,74,0.1); }
     .stat-card.meitu .stat-value { color: var(--meitu); }
+    .stat-card.bcam .stat-icon { background: rgba(109,74,219,0.1); }
     .stat-card.bcam .stat-value { color: var(--beautycam); }
+    .stat-card.cost .stat-icon { background: rgba(15,155,122,0.1); }
+    .stat-card.cost .stat-value { color: var(--teal); font-size: 18px; }
 
-    .filter-bar { display: flex; align-items: center; gap: 10px; padding: 20px 0 16px; flex-wrap: wrap; }
-    .chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all .15s; }
-    .chip:hover { border-color: rgba(255,255,255,.25); color: var(--text); }
-    .chip.on { background: rgba(255,77,109,.15); border-color: var(--accent); color: var(--accent); }
-    .chip.on-bcam { background: rgba(124,58,237,.15); border-color: var(--beautycam); color: var(--beautycam); }
-    .chip.on-viral { background: rgba(245,158,11,.15); border-color: var(--amber); color: var(--amber); }
-    .sort-sel { margin-left: auto; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
+    /* 필터바 */
+    .filter-bar { display: flex; align-items: center; gap: 8px; padding: 16px 0 14px; flex-wrap: wrap; }
+    .chip { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all .15s; }
+    .chip:hover { border-color: var(--text); color: var(--text); }
+    .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .chip.on-b { background: var(--beautycam); border-color: var(--beautycam); color: #fff; }
+    .chip.on-v { background: var(--amber); border-color: var(--amber); color: #fff; }
+    .sort-sel { margin-left: auto; background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 8px; color: var(--text); padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
 
+    /* 메인 그리드 */
     .content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; padding-bottom: 40px; }
-    .feed { display: flex; flex-direction: column; gap: 10px; }
+    .feed { display: flex; flex-direction: column; gap: 8px; }
 
-    .rcard { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: 72px 1fr 72px; gap: 14px; align-items: start; text-decoration: none; color: inherit; transition: border-color .15s; }
+    /* 릴스 카드 */
+    .rcard { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 66px 1fr 68px; gap: 14px; align-items: start; text-decoration: none; color: inherit; transition: border-color .15s; cursor: pointer; }
     .rcard:hover { border-color: var(--border2); }
-    .rcard.viral { border-color: rgba(255,77,109,.3); background: linear-gradient(135deg, rgba(255,77,109,.04) 0%, var(--bg2) 60%); }
-    .thumb { width: 72px; height: 72px; border-radius: 8px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; }
+    .rcard.viral { border-color: rgba(226,75,74,0.35); background: rgba(226,75,74,0.03); }
+    .thumb { width: 66px; height: 66px; border-radius: 8px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; }
     .thumb img { width: 100%; height: 100%; object-fit: cover; }
-
     .rbody {}
     .rhead { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
     .bbadge { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
-    .bbadge.meitu { background: rgba(255,77,109,.15); color: #ff8099; }
-    .bbadge.beautycam { background: rgba(124,58,237,.15); color: #a78bfa; }
-    .vtag { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+    .bbadge.meitu { background: rgba(226,75,74,0.12); color: #B83332; }
+    .bbadge.beautycam { background: rgba(109,74,219,0.12); color: #5039A8; }
+    .vtag { padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(217,119,6,0.12); color: var(--amber); border: 0.5px solid rgba(217,119,6,0.3); }
+    .tracking-tag { padding: 2px 7px; border-radius: 10px; font-size: 10px; background: var(--bg3); color: var(--muted); }
     .rtime { margin-left: auto; font-size: 11px; color: var(--muted); }
-    .rcap { font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .rcap { font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 7px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .rmets { display: flex; gap: 12px; flex-wrap: wrap; }
     .met { font-size: 11px; color: var(--muted); }
     .met b { color: var(--text); font-weight: 500; }
-    .growth-pill { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-left: 4px; }
-    .growth-pill.hot { background: rgba(255,77,109,.15); color: var(--accent); }
-    .growth-pill.warm { background: rgba(245,158,11,.15); color: var(--amber); }
-    .growth-pill.cool { background: rgba(0,201,167,.1); color: var(--teal); }
+    .gpill { display: inline-block; padding: 2px 7px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .gpill.hot { background: rgba(226,75,74,0.1); color: var(--accent); }
+    .gpill.warm { background: rgba(217,119,6,0.1); color: var(--amber); }
+    .gpill.cool { background: rgba(15,155,122,0.1); color: var(--teal); }
 
-    .scol { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .sring { position: relative; width: 56px; height: 56px; }
+    /* 스코어 링 */
+    .scol { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .sring { position: relative; width: 54px; height: 54px; }
     .sring svg { transform: rotate(-90deg); }
     .sring-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
-    .sring-num { font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; }
+    .sring-num { font-size: 11px; font-weight: 700; }
     .sring-lbl { font-size: 9px; color: var(--muted); }
-    .snap-dots { display: flex; gap: 4px; margin-top: 4px; }
-    .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
+    .sdots { display: flex; gap: 3px; margin-top: 3px; }
+    .sdot { width: 5px; height: 5px; border-radius: 50%; background: var(--bg3); }
     .sdot.done { background: var(--teal); }
     .sdot.active { background: var(--amber); }
 
-    .sidebar { display: flex; flex-direction: column; gap: 14px; }
-    .sc { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
-    .sc-title { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 12px; }
-
-    .alert-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    /* 사이드바 */
+    .sidebar { display: flex; flex-direction: column; gap: 12px; }
+    .sc { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .sc-title { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+    .alert-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
     .alert-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .adot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .adot { width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
     .abrand { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
-    .agrowth { font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif; line-height: 1; }
+    .agrowth { font-size: 18px; font-weight: 700; font-family: 'Syne', sans-serif; line-height: 1; }
     .atime { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
-    .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
     .log-row:last-child { border-bottom: none; }
-    .ldot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .ldot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin-right: 5px; }
     .ldot.success { background: var(--teal); }
     .ldot.error { background: var(--accent); }
+    .guide-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 3px 0; }
+    .guide-row span:last-child { color: var(--text); font-weight: 500; }
 
     .empty-state { padding: 60px 20px; text-align: center; color: var(--muted); }
-    .loading-skeleton { background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    .loading-skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
     @keyframes shimmer { to { background-position: -200% 0; } }
 
     @media (max-width: 900px) {
       .content-grid { grid-template-columns: 1fr; }
-      .stats-row { grid-template-columns: repeat(2,1fr); }
       .sidebar { display: none; }
+      .stats-row { gap: 8px; }
+      .stat-card { min-width: 140px; }
     }
   </style>
 </head>
@@ -121,7 +146,7 @@
       </div>
       <div class="hdr-right">
         <div class="live-badge"><span class="live-dot"></span>실시간 추적 중</div>
-        <span id="last-update">—</span>
+        <span class="hdr-meta" id="last-update">—</span>
         <button class="refresh-btn" onclick="loadData()">새로고침</button>
       </div>
     </div>
@@ -131,24 +156,44 @@
 <main class="shell">
   <div class="stats-row">
     <div class="stat-card viral">
-      <div class="stat-label">급상승 감지</div>
-      <div class="stat-value" id="stat-viral">—</div>
-      <div class="stat-sub">바이럴 판정 릴스</div>
+      <div class="stat-icon">🔥</div>
+      <div class="stat-body">
+        <div class="stat-label">급상승 감지</div>
+        <div class="stat-value" id="stat-viral">—</div>
+        <div class="stat-sub">바이럴 판정 릴스</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">추적 중</div>
-      <div class="stat-value" id="stat-tracking">—</div>
-      <div class="stat-sub">재측정 대기 릴스</div>
+    <div class="stat-card tracking">
+      <div class="stat-icon">📡</div>
+      <div class="stat-body">
+        <div class="stat-label">추적 중</div>
+        <div class="stat-value" id="stat-tracking">—</div>
+        <div class="stat-sub">재측정 대기</div>
+      </div>
     </div>
     <div class="stat-card meitu">
-      <div class="stat-label">메이투</div>
-      <div class="stat-value" id="stat-meitu">—</div>
-      <div class="stat-sub">수집 릴스</div>
+      <div class="stat-icon">🇨🇳</div>
+      <div class="stat-body">
+        <div class="stat-label">메이투</div>
+        <div class="stat-value" id="stat-meitu">—</div>
+        <div class="stat-sub">수집 릴스</div>
+      </div>
     </div>
     <div class="stat-card bcam">
-      <div class="stat-label">뷰티캠</div>
-      <div class="stat-value" id="stat-bcam">—</div>
-      <div class="stat-sub">수집 릴스</div>
+      <div class="stat-icon">📷</div>
+      <div class="stat-body">
+        <div class="stat-label">뷰티캠</div>
+        <div class="stat-value" id="stat-bcam">—</div>
+        <div class="stat-sub">수집 릴스</div>
+      </div>
+    </div>
+    <div class="stat-card cost">
+      <div class="stat-icon">💰</div>
+      <div class="stat-body">
+        <div class="stat-label">이번 달 Apify</div>
+        <div class="stat-value" id="stat-cost">$0.00</div>
+        <div class="stat-sub" id="stat-runs">실행 0회</div>
+      </div>
     </div>
   </div>
 
@@ -165,7 +210,7 @@
   </div>
 
   <div class="content-grid">
-    <div class="feed" id="feed"><div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">Failed to fetch</div><div style="font-size:11px;margin-top:6px;color:var(--muted)">SUPABASE_URL과 SUPABASE_ANON_KEY를 확인하세요</div></div></div>
+    <div class="feed" id="feed"><div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">Failed to fetch</div></div></div>
     <aside class="sidebar">
       <div class="sc">
         <div class="sc-title">🔔 최근 급상승 알림</div>
@@ -178,10 +223,10 @@
       <div class="sc">
         <div class="sc-title">📊 바이럴 판정 기준</div>
         <div style="font-size:12px;line-height:1.9;color:var(--muted)">
-          <div style="display:flex;justify-content:space-between"><span>6h 이내</span><span style="color:var(--text);font-weight:500">+300% 이상</span></div>
-          <div style="display:flex;justify-content:space-between"><span>12h 이내</span><span style="color:var(--text);font-weight:500">+500% 이상</span></div>
-          <div style="display:flex;justify-content:space-between"><span>24h 이내</span><span style="color:var(--text);font-weight:500">+800% 이상</span></div>
-          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;color:var(--accent);font-size:11px">최소 조회수 10,000 이상</div>
+          <div class="guide-row"><span>6h 이내</span><span>+300% 이상</span></div>
+          <div class="guide-row"><span>12h 이내</span><span>+500% 이상</span></div>
+          <div class="guide-row"><span>24h 이내</span><span>+800% 이상</span></div>
+          <div style="border-top:0.5px solid var(--border);margin-top:8px;padding-top:8px;font-size:11px;color:var(--accent);font-weight:500">최소 조회수 10,000 이상</div>
         </div>
       </div>
     </aside>
@@ -189,9 +234,12 @@
 </main>
 
 <script>
-// ★ 여기 두 줄만 본인 값으로 교체하세요
-const SUPABASE_URL     = 'https://byfxdwevmfocarvlnwla.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Znhkd2V2bWZvY2Fydmxud2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTQ2MjIsImV4cCI6MjA4OTMzMDYyMn0.uVKLAEBaudGcEw4nnZCSbSX0Tkjg8aVqurG4qclXpPc';
+// ★ 본인 값으로 교체
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+// Apify 비용 추정 (실행 1회당 약 $0.02 기준)
+const COST_PER_RUN = 0.02;
 
 let allPosts = [], allSnapshots = [];
 let filterBrand = 'all', filterViral = false, sortMode = 'first_seen_at';
@@ -210,71 +258,66 @@ function relTime(iso) {
   if (d < 86400) return Math.floor(d/3600)+'시간 전';
   return Math.floor(d/86400)+'일 전';
 }
-function growthColor(r) {
+function growthClass(r) {
   if (r >= 300) return 'hot';
   if (r >= 100) return 'warm';
   return 'cool';
 }
 function ringColor(r) {
-  if (r >= 300) return '#ff4d6d';
-  if (r >= 100) return '#f59e0b';
-  return '#00c9a7';
+  if (r >= 300) return '#E24B4A';
+  if (r >= 100) return '#D97706';
+  return '#0F9B7A';
+}
+function getLatestSnap(postId) {
+  return allSnapshots.filter(s => s.post_id === postId).sort((a,b) => b.snapshot_seq - a.snapshot_seq)[0] || null;
 }
 
-function getLatestSnapshot(postId) {
-  const snaps = allSnapshots.filter(s => s.post_id === postId).sort((a,b) => b.snapshot_seq - a.snapshot_seq);
-  return snaps[0] || null;
-}
-
-function ring(growthRate, snapshotSeq) {
-  const pct = Math.min(growthRate / 1000, 1);
-  const r = 22, cx = 28, cy = 28;
-  const circ = 2 * Math.PI * r;
+function ring(growthRate, seq) {
+  const pct = Math.min(growthRate/1000, 1);
+  const r = 21, cx = 27, cy = 27, circ = 2*Math.PI*r;
   const filled = pct * circ;
   const color = ringColor(growthRate);
-  const dots = Array.from({length: 4}, (_,i) => `<div class="sdot ${i < snapshotSeq ? 'done' : ''} ${i === snapshotSeq-1 ? 'active' : ''}"></div>`).join('');
+  const dots = Array.from({length:4},(_,i)=>`<div class="sdot ${i<seq?'done':''} ${i===seq-1?'active':''}"></div>`).join('');
+  const label = growthRate >= 1000 ? '+'+Math.round(growthRate/100)/10+'K%' : '+'+Math.round(growthRate)+'%';
   return `
     <div class="sring">
-      <svg width="56" height="56" viewBox="0 0 56 56">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4"/>
+      <svg width="54" height="54" viewBox="0 0 54 54">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
         <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
           stroke-dasharray="${filled.toFixed(1)} ${(circ-filled).toFixed(1)}" stroke-linecap="round"/>
       </svg>
-      <div class="sring-val">
-        <span class="sring-num" style="color:${color}">+${growthRate >= 1000 ? Math.round(growthRate/100)/10+'K' : Math.round(growthRate)}%</span>
-      </div>
+      <div class="sring-val"><span class="sring-num" style="color:${color}">${label}</span></div>
     </div>
-    <div class="snap-dots">${dots}</div>
-    <div style="font-size:9px;color:var(--muted);text-align:center">${snapshotSeq}번째 측정</div>
-  `;
+    <div class="sdots">${dots}</div>
+    <div style="font-size:9px;color:var(--muted);text-align:center">${seq}번째 측정</div>`;
 }
 
 function cardHTML(post) {
-  const snap = getLatestSnapshot(post.id);
-  const growthRate = snap ? snap.views_growth_rate : 0;
+  const snap = getLatestSnap(post.id);
+  const growthRate = snap ? Math.max(snap.views_growth_rate, 0) : 0;
   const currentViews = snap ? snap.views : post.initial_views;
   const seq = snap ? snap.snapshot_seq : 1;
+  const isViral = post.is_viral;
 
   return `
-    <a class="rcard ${post.is_viral ? 'viral' : ''}" href="${post.url}" target="_blank" rel="noopener">
+    <a class="rcard ${isViral?'viral':''}" href="${post.url}" target="_blank" rel="noopener">
       <div class="thumb">🎬</div>
       <div class="rbody">
         <div class="rhead">
-          <span class="bbadge ${post.brand}">${post.brand === 'meitu' ? '메이투' : '뷰티캠'}</span>
-          ${post.is_viral ? '<span class="vtag">급상승</span>' : ''}
+          <span class="bbadge ${post.brand}">${post.brand==='meitu'?'메이투':'뷰티캠'}</span>
+          ${isViral?'<span class="vtag">급상승</span>':'<span class="tracking-tag">추적 중</span>'}
           <span class="rtime">${relTime(post.first_seen_at)}</span>
         </div>
-        <div class="rcap">${post.caption || '(캡션 없음)'}</div>
+        <div class="rcap">${post.caption||'(캡션 없음)'}</div>
         <div class="rmets">
           <span class="met">👁 <b>${fmt(currentViews)}</b></span>
           <span class="met">❤ <b>${fmt(post.initial_likes)}</b></span>
           <span class="met">💬 <b>${fmt(post.initial_comments)}</b></span>
-          ${growthRate > 0 ? `<span class="growth-pill ${growthColor(growthRate)}">+${Math.round(growthRate)}%</span>` : ''}
+          ${growthRate>0?`<span class="gpill ${growthClass(growthRate)}">+${Math.round(growthRate)}%</span>`:''}
         </div>
       </div>
       <div class="scol">${ring(growthRate, seq)}</div>
-    </a>
-  `;
+    </a>`;
 }
 
 function getFiltered() {
@@ -283,16 +326,16 @@ function getFiltered() {
   if (filterViral) list = list.filter(p => p.is_viral);
   if (sortMode === 'growth') {
     list.sort((a,b) => {
-      const sa = getLatestSnapshot(a.id), sb = getLatestSnapshot(b.id);
-      return (sb?.views_growth_rate||0) - (sa?.views_growth_rate||0);
+      const sa = getLatestSnap(a.id), sb = getLatestSnap(b.id);
+      return (sb?.views_growth_rate||0)-(sa?.views_growth_rate||0);
     });
   } else if (sortMode === 'views') {
     list.sort((a,b) => {
-      const sa = getLatestSnapshot(a.id), sb = getLatestSnapshot(b.id);
-      return (sb?.views||b.initial_views||0) - (sa?.views||a.initial_views||0);
+      const sa = getLatestSnap(a.id), sb = getLatestSnap(b.id);
+      return (sb?.views||b.initial_views||0)-(sa?.views||a.initial_views||0);
     });
   } else {
-    list.sort((a,b) => new Date(b.first_seen_at) - new Date(a.first_seen_at));
+    list.sort((a,b) => new Date(b.first_seen_at)-new Date(a.first_seen_at));
   }
   return list;
 }
@@ -301,18 +344,32 @@ function renderFeed() {
   const feed = document.getElementById('feed');
   const posts = getFiltered();
   if (!posts.length) {
-    feed.innerHTML = '<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">📭</div><div>수집된 릴스가 없어요</div><div style="font-size:12px;margin-top:8px">자정부터 자동으로 수집 시작돼요</div></div>';
+    feed.innerHTML = '<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">📭</div><div>수집된 릴스가 없어요</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">다음 크롤링 후 데이터가 쌓여요</div></div>';
     return;
   }
   feed.innerHTML = posts.map(cardHTML).join('');
+}
+
+function calcMonthlyCost(logs) {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonthLogs = logs.filter(l => new Date(l.ran_at) >= startOfMonth);
+  const totalRuns = thisMonthLogs.length;
+  const cost = (totalRuns * COST_PER_RUN).toFixed(2);
+  document.getElementById('stat-cost').textContent = '$' + cost;
+  document.getElementById('stat-runs').textContent = '실행 ' + totalRuns + '회';
 }
 
 async function loadData() {
   const feed = document.getElementById('feed');
   feed.innerHTML = Array(3).fill(`
     <div class="rcard" style="pointer-events:none">
-      <div class="loading-skeleton" style="width:72px;height:72px;border-radius:8px;flex-shrink:0"></div>
-      <div style="flex:1"><div class="loading-skeleton" style="height:13px;width:40%;margin-bottom:8px;border-radius:4px"></div><div class="loading-skeleton" style="height:12px;width:85%;border-radius:4px"></div></div>
+      <div class="loading-skeleton" style="width:66px;height:66px;border-radius:8px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div class="loading-skeleton" style="height:13px;width:40%;margin-bottom:8px;border-radius:4px"></div>
+        <div class="loading-skeleton" style="height:12px;width:85%;margin-bottom:5px;border-radius:4px"></div>
+        <div class="loading-skeleton" style="height:12px;width:60%;border-radius:4px"></div>
+      </div>
     </div>`).join('');
 
   try {
@@ -321,23 +378,25 @@ async function loadData() {
       fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=first_seen_at.desc&limit=100`, {headers:h}),
       fetch(`${SUPABASE_URL}/rest/v1/post_snapshots?select=*&order=snapshot_seq.desc`, {headers:h}),
       fetch(`${SUPABASE_URL}/rest/v1/viral_alerts?select=*&order=alerted_at.desc&limit=10`, {headers:h}),
-      fetch(`${SUPABASE_URL}/rest/v1/crawl_logs?select=*&order=ran_at.desc&limit=8`, {headers:h}),
+      fetch(`${SUPABASE_URL}/rest/v1/crawl_logs?select=*&order=ran_at.desc&limit=50`, {headers:h}),
     ]);
 
-    allPosts = await pr.json();
+    allPosts     = await pr.json();
     allSnapshots = await sr.json();
     const alerts = await ar.json();
-    const logs = await lr.json();
+    const logs   = await lr.json();
 
-    document.getElementById('stat-viral').textContent = allPosts.filter(p=>p.is_viral).length;
+    document.getElementById('stat-viral').textContent    = allPosts.filter(p=>p.is_viral).length;
     document.getElementById('stat-tracking').textContent = allPosts.filter(p=>!p.is_viral).length;
-    document.getElementById('stat-meitu').textContent = allPosts.filter(p=>p.brand==='meitu').length;
-    document.getElementById('stat-bcam').textContent = allPosts.filter(p=>p.brand==='beautycam').length;
-    document.getElementById('last-update').textContent = '갱신: ' + new Date().toLocaleTimeString('ko-KR');
+    document.getElementById('stat-meitu').textContent    = allPosts.filter(p=>p.brand==='meitu').length;
+    document.getElementById('stat-bcam').textContent     = allPosts.filter(p=>p.brand==='beautycam').length;
+    document.getElementById('last-update').textContent   = '갱신: ' + new Date().toLocaleTimeString('ko-KR');
+
+    calcMonthlyCost(logs);
 
     document.getElementById('alerts-list').innerHTML = !alerts.length
       ? '<div style="font-size:12px;color:var(--muted)">알림 없음</div>'
-      : alerts.map(a => `
+      : alerts.map(a=>`
         <div class="alert-item">
           <div class="adot" style="background:${a.brand==='meitu'?'var(--meitu)':'var(--beautycam)'}"></div>
           <div>
@@ -347,9 +406,10 @@ async function loadData() {
           </div>
         </div>`).join('');
 
-    document.getElementById('crawl-log').innerHTML = !logs.length
+    const recentLogs = logs.slice(0,8);
+    document.getElementById('crawl-log').innerHTML = !recentLogs.length
       ? '<div style="font-size:12px;color:var(--muted)">로그 없음</div>'
-      : logs.map(l => `
+      : recentLogs.map(l=>`
         <div class="log-row">
           <span><span class="ldot ${l.status}"></span>${l.brand==='meitu'?'메이투':'뷰티캠'} <span style="color:var(--muted)">${l.posts_found||0}개</span></span>
           <span style="color:var(--muted);font-size:11px">${relTime(l.ran_at)}</span>
@@ -357,19 +417,19 @@ async function loadData() {
 
     renderFeed();
   } catch(e) {
-    feed.innerHTML = `<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">${e.message}</div><div style="font-size:11px;margin-top:6px;color:var(--muted)">SUPABASE_URL과 SUPABASE_ANON_KEY를 확인하세요</div></div>`;
+    feed.innerHTML = `<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div>데이터 로드 실패</div><div style="font-size:12px;margin-top:8px;color:var(--muted)">${e.message}</div></div>`;
   }
 }
 
 function setFilter(brand, el) {
   filterBrand = brand;
-  document.querySelectorAll('.chip:not(#viral-chip)').forEach(c => c.classList.remove('on','on-bcam'));
-  el.classList.add(brand==='beautycam'?'on-bcam':'on');
+  document.querySelectorAll('.chip:not(#viral-chip)').forEach(c=>c.classList.remove('on','on-b'));
+  el.classList.add(brand==='beautycam'?'on-b':'on');
   renderFeed();
 }
 function toggleViral(el) {
   filterViral = !filterViral;
-  el.classList.toggle('on-viral', filterViral);
+  el.classList.toggle('on-v', filterViral);
   renderFeed();
 }
 function setSort(v) { sortMode = v; renderFeed(); }
