@@ -93,23 +93,43 @@ function extractMetrics(post) {
 }
 
 // ✅ 최근 N일 이내 게시물인지 확인
-function isRecentPost(post) {
-  const ts = post.timestamp;
-  if (!ts) return false; // ✅ timestamp 없으면 오래된 것으로 간주하고 제외
+function parsePostDate(post) {
+  // 스크래퍼가 반환할 수 있는 모든 날짜 필드를 순서대로 시도
+  const candidates = [
+    post.timestamp,
+    post.takenAtTimestamp,
+    post.taken_at_timestamp,
+    post.date,
+    post.uploadDate,
+  ];
 
-  let postDate;
-  const num = Number(ts);
-  if (!isNaN(num) && num > 0) {
-    // Unix timestamp (초 단위) vs 밀리초 자동 판별
-    postDate = new Date(num > 1e12 ? num : num * 1000);
-  } else {
-    postDate = new Date(ts);
+  for (const ts of candidates) {
+    if (!ts) continue;
+    const num = Number(ts);
+    if (!isNaN(num) && num > 0) {
+      const d = new Date(num > 1e12 ? num : num * 1000);
+      if (!isNaN(d.getTime())) return d;
+    } else {
+      const d = new Date(ts);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  return null;
+}
+
+function isRecentPost(post) {
+  const postDate = parsePostDate(post);
+  if (!postDate) {
+    console.log(`[필터] 날짜 없음 → 제외: ${post.id || post.shortCode}`);
+    return false;
   }
 
-  if (isNaN(postDate.getTime())) return false; // 파싱 실패 시 제외
-
   const cutoff = new Date(Date.now() - MAX_POST_AGE_DAYS * 24 * 60 * 60 * 1000);
-  return postDate >= cutoff;
+  const isRecent = postDate >= cutoff;
+  if (!isRecent) {
+    console.log(`[필터] 오래된 게시물 → 제외: ${post.id || post.shortCode} (${postDate.toISOString().slice(0,10)})`);
+  }
+  return isRecent;
 }
 
 async function trackA_newCollection(supabase, brand, maxPosts) {
@@ -117,9 +137,9 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
 
   const run = await Actor.call('apify/instagram-hashtag-scraper', {
     hashtags:      brand.hashtags,
-    resultsLimit:  30,
+    resultsLimit:  50,           // ✅ 넉넉히 가져와서 날짜 필터로 걸러냄
     resultsType:   'reels',
-    searchType:    'recent',  // ✅ 최신순 (Top → Recent)
+    searchType:    'recent',
     keywordSearch: false,
     proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
   });
@@ -131,10 +151,14 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
   // ✅ 최근 7일 이내 게시물만 필터링
   const recentReels = brandReels.filter(p => isRecentPost(p));
 
-  console.log(`[${brand.key}][트랙A] 전체 ${items.length}개 → 브랜드 릴스 ${brandReels.length}개 → 최근 7일 ${recentReels.length}개`);
+  console.log(`[${brand.key}][트랙A] 전체 ${items.length}개 → 브랜드 릴스 ${brandReels.length}개 → 최근 ${MAX_POST_AGE_DAYS}일 ${recentReels.length}개`);
 
   const latest = recentReels
-    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+    .sort((a, b) => {
+      const da = parsePostDate(a) || new Date(0);
+      const db = parsePostDate(b) || new Date(0);
+      return db - da;
+    })
     .slice(0, maxPosts);
 
   let newCount = 0;
@@ -215,6 +239,10 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
       continue;
     }
 
+    // ✅ DB 저장 전 날짜 이중 체크
+    const postDate = parsePostDate(post);
+    const postedAtISO = postDate ? postDate.toISOString() : null;
+
     const { data: saved, error } = await supabase
       .from('posts')
       .insert({
@@ -229,7 +257,7 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
         initial_views:    views,
         initial_likes:    likes,
         initial_comments: comments,
-        posted_at:        safeTimestamp(post.timestamp),
+        posted_at:        postedAtISO,
       })
       .select('id')
       .single();
