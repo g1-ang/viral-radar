@@ -95,8 +95,19 @@ function extractMetrics(post) {
 // ✅ 최근 N일 이내 게시물인지 확인
 function isRecentPost(post) {
   const ts = post.timestamp;
-  if (!ts) return true; // timestamp 없으면 일단 통과
-  const postDate = new Date(Number(ts) * 1000);
+  if (!ts) return false; // ✅ timestamp 없으면 오래된 것으로 간주하고 제외
+
+  let postDate;
+  const num = Number(ts);
+  if (!isNaN(num) && num > 0) {
+    // Unix timestamp (초 단위) vs 밀리초 자동 판별
+    postDate = new Date(num > 1e12 ? num : num * 1000);
+  } else {
+    postDate = new Date(ts);
+  }
+
+  if (isNaN(postDate.getTime())) return false; // 파싱 실패 시 제외
+
   const cutoff = new Date(Date.now() - MAX_POST_AGE_DAYS * 24 * 60 * 60 * 1000);
   return postDate >= cutoff;
 }
@@ -106,8 +117,9 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
 
   const run = await Actor.call('apify/instagram-hashtag-scraper', {
     hashtags:      brand.hashtags,
-    resultsLimit:  15,
+    resultsLimit:  30,
     resultsType:   'reels',
+    searchType:    'recent',  // ✅ 최신순 (Top → Recent)
     keywordSearch: false,
     proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
   });
