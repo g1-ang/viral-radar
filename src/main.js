@@ -2,9 +2,9 @@ import { Actor } from 'apify';
 import { createClient } from '@supabase/supabase-js';
 
 const VIRAL_RULES = [
-  { maxHours: 6,  minGrowthRate: 200, minViews: 1_000 },
-  { maxHours: 12, minGrowthRate: 200, minViews: 3_000 },
-  { maxHours: 24, minGrowthRate: 300, minViews: 7_000 },
+  { maxHours: 6,  minGrowthRate: 150, minViews: 3_000 },
+  { maxHours: 12, minGrowthRate: 200, minViews: 5_000 },
+  { maxHours: 24, minGrowthRate: 300, minViews: 10_000 },
 ];
 
 const RECHECK_WINDOW_HOURS = 24;
