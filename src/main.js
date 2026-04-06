@@ -9,6 +9,8 @@ const VIRAL_RULES = [
 
 const RECHECK_WINDOW_HOURS = 24;
 const MAX_POST_AGE_DAYS = 7; // ✅ 7일 이내 게시물만 수집
+const MAX_SNAPSHOTS = 3;     // ✅ 최대 재측정 횟수 (비용 절감)
+const MIN_VIEWS_FOR_RECHECK = 100; // ✅ 초기 100뷰 이하는 재측정 스킵
 
 const BRANDS = [
   {
@@ -124,6 +126,7 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
     .slice(0, maxPosts);
 
   let newCount = 0;
+  const updatedPostIds = new Set(); // ✅ TrackA에서 업데이트한 기존 게시물 ID
 
   for (const post of latest) {
     const postId    = post.id || post.shortCode;
@@ -144,7 +147,59 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
     } catch (_) {}
 
     if (existing) {
-      console.log(`[${brand.key}][트랙A] 이미 수집됨: ${postId}`);
+      // ✅ 이미 수집된 게시물이면 스냅샷 업데이트 (TrackB 호출 절약)
+      if (views > 0) {
+        let lastSnap = null;
+        try {
+          const { data } = await supabase
+            .from('post_snapshots')
+            .select('views, snapshot_seq')
+            .eq('post_id', existing.id)
+            .order('snapshot_seq', { ascending: false })
+            .limit(1)
+            .single();
+          lastSnap = data;
+        } catch (_) {}
+
+        if (lastSnap && lastSnap.snapshot_seq < MAX_SNAPSHOTS && lastSnap.views > 0) {
+          const prevViews = lastSnap.views;
+          const viewsDelta = views - prevViews;
+          const growthRate = ((views - prevViews) / prevViews) * 100;
+
+          const { data: postData } = await supabase
+            .from('posts')
+            .select('first_seen_at')
+            .eq('id', existing.id)
+            .single();
+          const hoursElapsed = postData
+            ? (Date.now() - new Date(postData.first_seen_at)) / 3_600_000
+            : 0;
+
+          await supabase.from('post_snapshots').insert({
+            post_id:           existing.id,
+            instagram_post_id: postId,
+            views,
+            likes,
+            comments,
+            views_delta:       viewsDelta,
+            views_growth_rate: Math.round(growthRate * 10) / 10,
+            hours_elapsed:     Math.round(hoursElapsed * 10) / 10,
+            snapshot_seq:      lastSnap.snapshot_seq + 1,
+          });
+
+          // 바이럴 체크
+          if (checkViralCondition(growthRate, hoursElapsed, views)) {
+            await supabase
+              .from('posts')
+              .update({ is_viral: true, viral_detected_at: new Date().toISOString() })
+              .eq('id', existing.id);
+            console.log(`[${brand.key}][트랙A] 🔥 재활용 바이럴 감지! ${postId} +${growthRate.toFixed(1)}%`);
+          } else {
+            console.log(`[${brand.key}][트랙A] 재활용 업데이트: ${postId} +${growthRate.toFixed(1)}%`);
+          }
+          updatedPostIds.add(postId);
+        }
+      }
       continue;
     }
 
@@ -192,16 +247,16 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
     console.log(`[${brand.key}][트랙A] 저장: ${postId} | 조회수: ${views.toLocaleString()}`);
   }
 
-  console.log(`[${brand.key}][트랙A] 완료 — ${newCount}개 신규 저장`);
-  return newCount;
+  console.log(`[${brand.key}][트랙A] 완료 — ${newCount}개 신규 저장, ${updatedPostIds.size}개 재활용 업데이트`);
+  return { newCount, updatedPostIds };
 }
 
-async function trackB_recheck(supabase, brand, slackWebhook) {
+async function trackB_recheck(supabase, brand, slackWebhook, updatedByTrackA = new Set()) {
   console.log(`[${brand.key}][트랙B] 재측정 시작`);
 
   const windowStart = new Date(Date.now() - RECHECK_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
 
-  const { data: targets, error } = await supabase
+  const { data: allTargets, error } = await supabase
     .from('posts')
     .select('id, post_id, url, initial_views, first_seen_at')
     .eq('brand', brand.key)
@@ -209,12 +264,47 @@ async function trackB_recheck(supabase, brand, slackWebhook) {
     .gte('first_seen_at', windowStart)
     .order('first_seen_at', { ascending: false });
 
-  if (error || !targets?.length) {
+  if (error || !allTargets?.length) {
     console.log(`[${brand.key}][트랙B] 재측정 대상 없음`);
     return 0;
   }
 
-  console.log(`[${brand.key}][트랙B] 재측정 대상: ${targets.length}개`);
+  // ✅ 최소 조회수 필터 + 최대 재측정 횟수 제한 + TrackA 재활용 제외
+  const targets = [];
+  for (const t of allTargets) {
+    if (t.initial_views < MIN_VIEWS_FOR_RECHECK) {
+      console.log(`[${brand.key}][트랙B] 조회수 부족 스킵 (${t.initial_views}뷰): ${t.post_id}`);
+      continue;
+    }
+    // 이미 TrackA에서 업데이트된 게시물은 제외
+    if (updatedByTrackA.has(t.post_id)) {
+      console.log(`[${brand.key}][트랙B] TrackA 재활용 스킵: ${t.post_id}`);
+      continue;
+    }
+    let lastSnap = null;
+    try {
+      const { data } = await supabase
+        .from('post_snapshots')
+        .select('snapshot_seq')
+        .eq('post_id', t.id)
+        .order('snapshot_seq', { ascending: false })
+        .limit(1)
+        .single();
+      lastSnap = data;
+    } catch (_) {}
+    if (lastSnap && lastSnap.snapshot_seq >= MAX_SNAPSHOTS) {
+      console.log(`[${brand.key}][트랙B] 측정 완료 스킵 (${lastSnap.snapshot_seq}회): ${t.post_id}`);
+      continue;
+    }
+    targets.push(t);
+  }
+
+  if (!targets.length) {
+    console.log(`[${brand.key}][트랙B] 필터 후 재측정 대상 없음 (전체 ${allTargets.length}개 중)`);
+    return 0;
+  }
+
+  console.log(`[${brand.key}][트랙B] 재측정 대상: ${targets.length}개 (전체 ${allTargets.length}개 중)`);
   let viralFound = 0;
 
   for (const target of targets) {
@@ -404,8 +494,9 @@ Actor.main(async () => {
     let viralFound = 0;
 
     try {
-      newCount = await trackA_newCollection(supabase, brand, MAX_POSTS);
-      viralFound = await trackB_recheck(supabase, brand, SLACK_WEBHOOK);
+      const trackAResult = await trackA_newCollection(supabase, brand, MAX_POSTS);
+      newCount = trackAResult.newCount;
+      viralFound = await trackB_recheck(supabase, brand, SLACK_WEBHOOK, trackAResult.updatedPostIds);
 
       await supabase.from('crawl_logs').insert({
         brand:           brand.key,
