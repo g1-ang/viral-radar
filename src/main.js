@@ -147,11 +147,22 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
   const { items } = await Actor.openDataset(run.defaultDatasetId)
     .then(ds => ds.getData());
 
-  const brandReels = items.filter(p => isKoreanBrandPost(p, brand));
+  // ✅ 릴스만 필터 (피드/이미지 게시물 제외)
+  const reelsOnly = items.filter(p => {
+    const url = p.url || '';
+    const type = (p.type || p.productType || '').toLowerCase();
+    const isReel = url.includes('/reel/') || type.includes('reel') || type.includes('clips') || p.videoUrl;
+    if (!isReel) {
+      console.log(`[필터] 릴스 아님 → 제외: ${p.id || p.shortCode} (${url.split('/').slice(0,5).join('/')})`);
+    }
+    return isReel;
+  });
+
+  const brandReels = reelsOnly.filter(p => isKoreanBrandPost(p, brand));
   // ✅ 최근 7일 이내 게시물만 필터링
   const recentReels = brandReels.filter(p => isRecentPost(p));
 
-  console.log(`[${brand.key}][트랙A] 전체 ${items.length}개 → 브랜드 릴스 ${brandReels.length}개 → 최근 ${MAX_POST_AGE_DAYS}일 ${recentReels.length}개`);
+  console.log(`[${brand.key}][트랙A] 전체 ${items.length}개 → 릴스 ${reelsOnly.length}개 → 브랜드 ${brandReels.length}개 → 최근 ${MAX_POST_AGE_DAYS}일 ${recentReels.length}개`);
 
   const latest = recentReels
     .sort((a, b) => {
