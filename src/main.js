@@ -147,15 +147,21 @@ async function trackA_newCollection(supabase, brand, maxPosts) {
   const { items } = await Actor.openDataset(run.defaultDatasetId)
     .then(ds => ds.getData());
 
-  // ✅ 릴스만 필터 (피드/이미지 게시물 제외)
+  // ✅ 릴스(영상) 필터 — 이미지 전용 게시물만 제외
   const reelsOnly = items.filter(p => {
     const url = p.url || '';
     const type = (p.type || p.productType || '').toLowerCase();
-    const isReel = url.includes('/reel/') || type.includes('reel') || type.includes('clips') || p.videoUrl;
-    if (!isReel) {
-      console.log(`[필터] 릴스 아님 → 제외: ${p.id || p.shortCode} (${url.split('/').slice(0,5).join('/')})`);
+    // 릴스 판별: URL, type 필드, 또는 영상 관련 필드 존재 여부
+    const isReel = url.includes('/reel/')
+      || type.includes('reel') || type.includes('clips') || type.includes('video')
+      || p.videoUrl || p.videoViewCount || p.videoPlayCount || p.playsCount;
+    // 확실한 이미지 전용일 때만 제외 (type이 'image'/'photo'/'carousel'인 경우)
+    const isImageOnly = !isReel && (type.includes('image') || type.includes('photo') || type.includes('carousel'));
+    if (isImageOnly) {
+      console.log(`[필터] 이미지 게시물 → 제외: ${p.id || p.shortCode} (type: ${type})`);
+      return false;
     }
-    return isReel;
+    return true; // 판별 불가능한 경우 일단 포함
   });
 
   const brandReels = reelsOnly.filter(p => isKoreanBrandPost(p, brand));
